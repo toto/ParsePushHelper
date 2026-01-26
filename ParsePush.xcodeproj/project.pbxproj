@@ -50,11 +50,6 @@
 			path = Resources;
 			sourceTree = "<group>";
 		};
-		99B106942F27B6AB00BC6698 /* Config */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = Config;
-			sourceTree = "<group>";
-		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -85,7 +80,6 @@
 		99B106532F27B60400BC6698 = {
 			isa = PBXGroup;
 			children = (
-				99B106942F27B6AB00BC6698 /* Config */,
 				99B1065E2F27B60400BC6698 /* Sources */,
 				99B1066C2F27B60500BC6698 /* Tests */,
 				99B106762F27B60500BC6698 /* UITests */,
@@ -122,7 +116,6 @@
 			fileSystemSynchronizedGroups = (
 				99B1065E2F27B60400BC6698 /* Sources */,
 				99B106912F27B69500BC6698 /* Resources */,
-				99B106942F27B6AB00BC6698 /* Config */,
 			);
 			name = ParsePush;
 			packageProductDependencies = (
