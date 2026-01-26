@@ -1,0 +1,67 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+
+# macOS metadata
+._*
+.Spotlight-V100
+.Trashes
+
+# Xcode
+DerivedData/
+xcuserdata/
+*.xcworkspace/xcshareddata/WorkspaceSettings.xcsettings
+*.xccheckout
+*.moved-aside
+*.pbxuser
+*.mode1v3
+*.mode2v3
+*.perspectivev3
+*.xcuserstate
+*.xccoverage
+*.xcscmblueprint
+*.xcsettings
+build/
+
+# Swift Package Manager
+.build/
+.swiftpm/xcode/package.xcworkspace/
+.swiftpm/xcode/xcshareddata/checkouts/
+.swiftpm/xcode/xcshareddata/xcschemes/
+Package.resolved
+
+# CocoaPods
+Pods/
+*.xcconfig
+
+# Carthage
+Carthage/Build/
+Carthage/Checkouts/
+Carthage/BuildArtifacts/
+
+# Tuist
+Tuist/Cache/
+Tuist/Dependencies/
+Tuist/AutomationTasks/
+
+# Mint
+Mint/build/
+Mint/packages/
+
+# Fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/
+fastlane/test_output/
+
+# Distribution artifacts
+*.ipa
+*.dSYM
+*.dSYM.zip
+*.xcarchive
+
+# Swift diagnostics
+*.profdata
+*.plist~
