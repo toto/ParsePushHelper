@@ -11,10 +11,12 @@ public struct ParseServerConfiguration: Identifiable, Codable, Equatable {
     public let id: UUID
     public var name: String
     public var serverURL: URL
+    public var appID: String
 
-    public init(id: UUID = UUID(), name: String, serverURL: URL) {
+    public init(id: UUID = UUID(), name: String, serverURL: URL, appID: String) {
         self.id = id
         self.name = name
         self.serverURL = serverURL
+        self.appID = appID
     }
 }

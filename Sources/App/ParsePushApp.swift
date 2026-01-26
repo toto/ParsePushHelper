@@ -11,7 +11,7 @@ import SwiftUI
 struct ParsePushApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ContentView(store: ParseServerStore(keychain: KeychainStore()))
         }
     }
 }

@@ -13,27 +13,35 @@ import SwiftUI
 @Observable
 public final class ParseServerStore {
     private let userDefaults: UserDefaults
+    private let keychain: KeychainStore
     private let storageKey = "parseServerConfigurations"
 
     public private(set) var configurations: [ParseServerConfiguration] = []
 
-    public init(userDefaults: UserDefaults = .standard) {
+    public init(userDefaults: UserDefaults = .standard, keychain: KeychainStore) {
         self.userDefaults = userDefaults
+        self.keychain = keychain
         loadConfigurations()
     }
 
-    public func add(_ configuration: ParseServerConfiguration) {
+    public func add(_ configuration: ParseServerConfiguration, apiKey: String) {
         configurations.append(configuration)
+        keychain.save(apiKey, for: configuration.id.uuidString)
         saveConfigurations()
     }
 
-    public func update(_ configuration: ParseServerConfiguration) {
+    public func update(_ configuration: ParseServerConfiguration, apiKey: String) {
         if let index = configurations.firstIndex(where: { $0.id == configuration.id }) {
             configurations[index] = configuration
         } else {
             configurations.append(configuration)
         }
+        keychain.save(apiKey, for: configuration.id.uuidString)
         saveConfigurations()
+    }
+
+    public func apiKey(for configuration: ParseServerConfiguration) -> String? {
+        keychain.read(for: configuration.id.uuidString)
     }
 
     public func delete(ids: [ParseServerConfiguration.ID]) {
@@ -41,6 +49,7 @@ public final class ParseServerStore {
             return
         }
         configurations.removeAll { ids.contains($0.id) }
+        ids.forEach { keychain.delete(for: $0.uuidString) }
         saveConfigurations()
     }
 

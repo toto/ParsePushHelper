@@ -10,17 +10,20 @@ import SwiftUI
 struct ParseServerConfigurationFormView: View {
     private let existingConfiguration: ParseServerConfiguration?
     private let isCancellationAllowed: Bool
-    private let onSave: (ParseServerConfiguration) -> Void
+    private let onSave: (ParseServerConfiguration, String) -> Void
     private let onCancel: () -> Void
 
     @State private var name: String
     @State private var serverURLString: String
+    @State private var appID: String
+    @State private var apiKey: String
     @State private var validationMessage: String?
 
     init(
         existingConfiguration: ParseServerConfiguration?,
+        existingAPIKey: String,
         isCancellationAllowed: Bool,
-        onSave: @escaping (ParseServerConfiguration) -> Void,
+        onSave: @escaping (ParseServerConfiguration, String) -> Void,
         onCancel: @escaping () -> Void
     ) {
         self.existingConfiguration = existingConfiguration
@@ -29,6 +32,8 @@ struct ParseServerConfigurationFormView: View {
         self.onCancel = onCancel
         _name = State(initialValue: existingConfiguration?.name ?? "")
         _serverURLString = State(initialValue: existingConfiguration?.serverURL.absoluteString ?? "")
+        _appID = State(initialValue: existingConfiguration?.appID ?? "")
+        _apiKey = State(initialValue: existingAPIKey)
     }
 
     var body: some View {
@@ -44,10 +49,16 @@ struct ParseServerConfigurationFormView: View {
                 Section("Details") {
                     TextField("Name", text: $name)
                         .textInputAutocapitalization(.words)
+                    TextField("App ID", text: $appID)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
                     TextField("Server URL", text: $serverURLString)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
                         .keyboardType(.URL)
+                    SecureField("API Key", text: $apiKey)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
                 }
 
                 
@@ -73,9 +84,21 @@ struct ParseServerConfigurationFormView: View {
     private func saveConfiguration() {
         let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
         let trimmedURL = serverURLString.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedAppID = appID.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedAPIKey = apiKey.trimmingCharacters(in: .whitespacesAndNewlines)
 
         guard !trimmedName.isEmpty else {
             validationMessage = "Please enter a name for this server."
+            return
+        }
+
+        guard !trimmedAppID.isEmpty else {
+            validationMessage = "Please enter an App ID."
+            return
+        }
+
+        guard trimmedAppID.range(of: "^[A-Za-z0-9]+$", options: .regularExpression) != nil else {
+            validationMessage = "App ID can only contain ASCII letters and numbers."
             return
         }
 
@@ -89,13 +112,19 @@ struct ParseServerConfigurationFormView: View {
             return
         }
 
+        guard !trimmedAPIKey.isEmpty else {
+            validationMessage = "Please enter an API key."
+            return
+        }
+
         validationMessage = nil
         let configuration = ParseServerConfiguration(
             id: existingConfiguration?.id ?? UUID(),
             name: trimmedName,
-            serverURL: url
+            serverURL: url,
+            appID: trimmedAppID
         )
-        onSave(configuration)
+        onSave(configuration, trimmedAPIKey)
     }
 }
 
@@ -104,10 +133,12 @@ struct ParseServerConfigurationFormView: View {
         ParseServerConfigurationFormView(
             existingConfiguration: ParseServerConfiguration(
                 name: "Production",
-                serverURL: url
+                serverURL: url,
+                appID: "APP123"
             ),
+            existingAPIKey: "preview-api-key",
             isCancellationAllowed: true,
-            onSave: { _ in },
+            onSave: { _, _ in },
             onCancel: {}
         )
     }
