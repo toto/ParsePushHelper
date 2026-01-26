@@ -1,0 +1,4 @@
+app_identifier("com.example.ParsePushHelper")
+apple_id("ios-dev@example.com")
+team_id("ABCDEFG123")
+json_key_file("../Config/AuthKey.p8")
