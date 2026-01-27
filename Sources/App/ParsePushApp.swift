@@ -9,9 +9,11 @@ import SwiftUI
 
 @main
 struct ParsePushApp: App {
+    @State private var templateStore = PushTemplateStore()
+
     var body: some Scene {
         WindowGroup {
-            ContentView(store: ParseServerStore(keychain: KeychainStore()))
+            ContentView(store: ParseServerStore(keychain: KeychainStore()), templateStore: templateStore)
         }
     }
 }

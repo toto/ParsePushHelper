@@ -8,6 +8,9 @@
 import SwiftUI
 
 struct ComposePushView: View {
+    let template: PushMessageTemplate?
+    let templateStore: PushTemplateStore
+
     @Environment(\.dismiss) private var dismiss
     @State private var title = ""
     @State private var bodyText = ""
@@ -19,6 +22,13 @@ struct ComposePushView: View {
     @State private var language = PushLanguage.all
     @State private var urlString = ""
     @State private var isPresentingDiscardConfirmation = false
+    @State private var isPresentingSaveAsTemplate = false
+    @State private var newTemplateName = ""
+
+    init(template: PushMessageTemplate? = nil, templateStore: PushTemplateStore) {
+        self.template = template
+        self.templateStore = templateStore
+    }
 
     var body: some View {
         NavigationStack {
@@ -76,7 +86,7 @@ struct ComposePushView: View {
                         .foregroundStyle(.secondary)
                 }
             }
-            .navigationTitle("Compose")
+            .navigationTitle(template != nil ? "Edit Template" : "Compose")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") {
@@ -88,13 +98,41 @@ struct ComposePushView: View {
                     }
                     .disabled(!canSend)
                 }
+                ToolbarItem(placement: .primaryAction) {
+                    if template != nil {
+                        Button("Update template") {
+                            updateTemplate()
+                        }
+                        .disabled(!isDirty)
+                    } else {
+                        Button("Save as template") {
+                            isPresentingSaveAsTemplate = true
+                        }
+                        .disabled(!isDirty)
+                    }
+                }
+            }
+        }
+        .onAppear {
+            if let t = template {
+                title = t.title
+                bodyText = t.bodyText
+                target = t.target
+                isSoundEnabled = t.isSoundEnabled
+                isBadgeEnabled = t.isBadgeEnabled
+                badgeCount = t.badgeCount
+                isTimeSensitive = t.isTimeSensitive
+                language = t.language
+                urlString = t.urlString
+                newTemplateName = t.name
             }
         }
         .interactiveDismissDisabled(isDirty)
-        .confirmationDialog(
-            "Save this draft?",
-            isPresented: $isPresentingDiscardConfirmation
-        ) {
+        .confirmationDialog("Save this draft?", isPresented: $isPresentingDiscardConfirmation) {
+            Button("Save as template") {
+                isPresentingDiscardConfirmation = false
+                isPresentingSaveAsTemplate = true
+            }
             Button("Save as Draft") {
             }
             Button("Discard", role: .destructive) {
@@ -102,7 +140,19 @@ struct ComposePushView: View {
             }
             Button("Keep Editing", role: .cancel) {}
         } message: {
-            Text("You can save it as a draft or discard it.")
+            Text("You can save it as a draft, save as a template, or discard it.")
+        }
+        .alert("Template Name", isPresented: $isPresentingSaveAsTemplate) {
+            TextField("Name", text: $newTemplateName)
+            Button("Cancel", role: .cancel) {
+                newTemplateName = template?.name ?? ""
+            }
+            Button("Save") {
+                saveAsTemplate(name: newTemplateName.trimmingCharacters(in: .whitespacesAndNewlines))
+            }
+            .disabled(newTemplateName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+        } message: {
+            Text("Enter a name for this local template.")
         }
     }
 
@@ -143,46 +193,46 @@ struct ComposePushView: View {
             dismiss()
         }
     }
-}
 
-private enum PushTarget: String, CaseIterable, Identifiable {
-    case allDevices
-    case testDevices
-    case segment
-
-    var id: String { rawValue }
-
-    var title: String {
-        switch self {
-        case .allDevices:
-            return "All Devices"
-        case .testDevices:
-            return "Test Devices"
-        case .segment:
-            return "Segment"
-        }
+    private func saveAsTemplate(name: String) {
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        let newTemplate = PushMessageTemplate(
+            name: trimmed,
+            title: title,
+            bodyText: bodyText,
+            target: target,
+            isSoundEnabled: isSoundEnabled,
+            isBadgeEnabled: isBadgeEnabled,
+            badgeCount: badgeCount,
+            isTimeSensitive: isTimeSensitive,
+            language: language,
+            urlString: urlString
+        )
+        templateStore.add(newTemplate)
+        dismiss()
     }
-}
 
-private enum PushLanguage: String, CaseIterable, Identifiable {
-    case all
-    case de
-    case en
-
-    var id: String { rawValue }
-
-    var title: String {
-        switch self {
-        case .all:
-            return "All Languages"
-        case .de:
-            return "DE"
-        case .en:
-            return "EN"
-        }
+    private func updateTemplate() {
+        guard let t = template else { return }
+        let updated = PushMessageTemplate(
+            id: t.id,
+            name: t.name,
+            title: title,
+            bodyText: bodyText,
+            target: target,
+            isSoundEnabled: isSoundEnabled,
+            isBadgeEnabled: isBadgeEnabled,
+            badgeCount: badgeCount,
+            isTimeSensitive: isTimeSensitive,
+            language: language,
+            urlString: urlString
+        )
+        templateStore.update(updated)
+        dismiss()
     }
 }
 
 #Preview {
-    ComposePushView()
+    ComposePushView(templateStore: PushTemplateStore())
 }

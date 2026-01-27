@@ -9,16 +9,18 @@ import SwiftUI
 
 struct ContentView: View {
     @State private var store: ParseServerStore
+    let templateStore: PushTemplateStore
     @State private var isPresentingInitialConfiguration = false
     @State private var initialAPIKey = ""
 
-    init(store: ParseServerStore) {
+    init(store: ParseServerStore, templateStore: PushTemplateStore) {
         _store = State(initialValue: store)
+        self.templateStore = templateStore
     }
 
     var body: some View {
         TabView {
-            PushView()
+            PushView(templateStore: templateStore)
                 .tabItem {
                     Label("Push", systemImage: "paperplane")
                 }
