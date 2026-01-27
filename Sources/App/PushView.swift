@@ -7,10 +7,16 @@
 
 import SwiftUI
 
+/// Identifiable wrapper for compose context: new message or editing a template.
+/// Using this with `sheet(item:)` ensures the correct template is passed when opening a template.
+private struct ComposeSheetItem: Identifiable {
+    let id: String
+    let template: PushMessageTemplate?
+}
+
 struct PushView: View {
     let templateStore: PushTemplateStore
-    @State private var isPresentingCompose = false
-    @State private var composingTemplate: PushMessageTemplate?
+    @State private var composeSheetItem: ComposeSheetItem?
 
     var body: some View {
         NavigationStack {
@@ -26,8 +32,7 @@ struct PushView: View {
                         Section("Templates") {
                             ForEach(templateStore.templates) { template in
                                 Button {
-                                    composingTemplate = template
-                                    isPresentingCompose = true
+                                    composeSheetItem = ComposeSheetItem(id: template.id.uuidString, template: template)
                                 } label: {
                                     VStack(alignment: .leading, spacing: 2) {
                                         Text(template.name)
@@ -53,14 +58,13 @@ struct PushView: View {
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     Button("Compose", systemImage: "square.and.pencil") {
-                        composingTemplate = nil
-                        isPresentingCompose = true
+                        composeSheetItem = ComposeSheetItem(id: UUID().uuidString, template: nil)
                     }
                 }
             }
         }
-        .sheet(isPresented: $isPresentingCompose) {
-            ComposePushView(template: composingTemplate, templateStore: templateStore)
+        .sheet(item: $composeSheetItem, onDismiss: { composeSheetItem = nil }) { item in
+            ComposePushView(template: item.template, templateStore: templateStore)
         }
     }
 }
