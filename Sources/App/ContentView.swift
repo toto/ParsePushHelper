@@ -22,7 +22,7 @@ struct ContentView: View {
         TabView {
             PushView(templateStore: templateStore)
                 .tabItem {
-                    Label("Push", systemImage: "paperplane")
+                    Label("Templates", systemImage: "doc.on.doc")
                 }
 
             ConfigurationView(store: store)

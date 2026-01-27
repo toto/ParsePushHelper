@@ -80,36 +80,23 @@ struct ComposePushView: View {
                             .foregroundStyle(.red)
                     }
                 }
-
-                Section {
-                    Text("Draft sending options will be added here.")
-                        .foregroundStyle(.secondary)
-                }
             }
-            .navigationTitle(template != nil ? "Edit Template" : "Compose")
+            .navigationTitle(template != nil ? "Edit Template" : "New Template")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") {
+                    Button("Cancel", role: .cancel) {
                         handleCancel()
                     }
                 }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Send") {
-                    }
-                    .disabled(!canSend)
-                }
                 ToolbarItem(placement: .primaryAction) {
-                    if template != nil {
-                        Button("Update template") {
+                    Button("Save") {
+                        if template != nil {
                             updateTemplate()
-                        }
-                        .disabled(!isDirty)
-                    } else {
-                        Button("Save as template") {
+                        } else {
                             isPresentingSaveAsTemplate = true
                         }
-                        .disabled(!isDirty)
                     }
+                    .disabled(!isDirty)
                 }
             }
         }
@@ -154,10 +141,6 @@ struct ComposePushView: View {
         } message: {
             Text("Enter a name for this local template.")
         }
-    }
-
-    private var canSend: Bool {
-        !bodyText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && isURLValid
     }
 
     private var isURLValid: Bool {

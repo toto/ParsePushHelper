@@ -54,10 +54,10 @@ struct PushView: View {
                     }
                 }
             }
-            .navigationTitle("Push")
+            .navigationTitle("Templates")
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
-                    Button("Compose", systemImage: "square.and.pencil") {
+                    Button("Add", systemImage: "plus") {
                         composeSheetItem = ComposeSheetItem(id: UUID().uuidString, template: nil)
                     }
                 }
