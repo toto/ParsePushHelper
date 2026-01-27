@@ -27,7 +27,7 @@ struct ContentView: View {
 
             ConfigurationView(store: store)
                 .tabItem {
-                    Label("Configuration", systemImage: "gearshape")
+                    Label("Servers", systemImage: "server.rack")
                 }
         }
         .sheet(isPresented: $isPresentingInitialConfiguration) {

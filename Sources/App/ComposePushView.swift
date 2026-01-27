@@ -87,6 +87,12 @@ struct ComposePushView: View {
                     Button("Cancel", role: .cancel) {
                         handleCancel()
                     }
+                    .confirmationDialog("Discard your changes?", isPresented: $isPresentingDiscardConfirmation, titleVisibility: .visible) {
+                        Button("Discard", role: .destructive) {
+                            dismiss()
+                        }
+                        Button("Keep Editing", role: .cancel) {}
+                    }
                 }
                 ToolbarItem(placement: .primaryAction) {
                     Button("Save") {
@@ -115,18 +121,6 @@ struct ComposePushView: View {
             }
         }
         .interactiveDismissDisabled(isDirty)
-        .confirmationDialog("Save your changes?", isPresented: $isPresentingDiscardConfirmation) {
-            Button("Save as template") {
-                isPresentingDiscardConfirmation = false
-                isPresentingSaveAsTemplate = true
-            }
-            Button("Discard", role: .destructive) {
-                dismiss()
-            }
-            Button("Keep Editing", role: .cancel) {}
-        } message: {
-            Text("Save as a template or discard your changes?")
-        }
         .alert("Template Name", isPresented: $isPresentingSaveAsTemplate) {
             TextField("Name", text: $newTemplateName)
             Button("Cancel", role: .cancel) {

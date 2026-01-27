@@ -25,29 +25,27 @@ struct ConfigurationView: View {
                         description: Text("Add a Parse Server configuration to get started.")
                     )
                 } else {
-                    Section("Servers") {
-                        ForEach(store.configurations) { configuration in
-                            Button {
-                                configurationToEdit = configuration
-                                apiKeyToEdit = store.apiKey(for: configuration) ?? ""
-                                isPresentingConfigurationSheet = true
-                            } label: {
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text(configuration.name)
-                                        .font(.headline)
-                                    Text(configuration.serverURL.absoluteString)
-                                        .font(.footnote)
-                                        .foregroundStyle(.secondary)
-                                }
+                    ForEach(store.configurations) { configuration in
+                        Button {
+                            configurationToEdit = configuration
+                            apiKeyToEdit = store.apiKey(for: configuration) ?? ""
+                            isPresentingConfigurationSheet = true
+                        } label: {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(configuration.name)
+                                    .font(.headline)
+                                Text(configuration.serverURL.absoluteString)
+                                    .font(.footnote)
+                                    .foregroundStyle(.secondary)
                             }
-                            .buttonStyle(.plain)
                         }
-                        .onDelete(perform: requestDelete)
-                        .onMove(perform: store.move(from:to:))
+                        .buttonStyle(.plain)
                     }
+                    .onDelete(perform: requestDelete)
+                    .onMove(perform: store.move(from:to:))
                 }
             }
-            .navigationTitle("Configuration")
+            .navigationTitle("Servers")
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     Button("Add", systemImage: "plus") {
