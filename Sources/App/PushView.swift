@@ -29,29 +29,29 @@ struct PushView: View {
                     )
                 } else {
                     List {
-                        Section("Templates") {
-                            ForEach(templateStore.templates) { template in
-                                Button {
-                                    composeSheetItem = ComposeSheetItem(id: template.id.uuidString, template: template)
+                        ForEach(templateStore.templates) { template in
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(template.name)
+                                    .foregroundStyle(.primary)
+                                Text("Saved on this device")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .contentShape(Rectangle())
+                            .onTapGesture {
+                                composeSheetItem = ComposeSheetItem(id: template.id.uuidString, template: template)
+                            }
+                            .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                                Button(role: .destructive) {
+                                    templateStore.delete(ids: [template.id])
                                 } label: {
-                                    VStack(alignment: .leading, spacing: 2) {
-                                        Text(template.name)
-                                            .foregroundStyle(.primary)
-                                        Text("Saved on this device")
-                                            .font(.caption)
-                                            .foregroundStyle(.secondary)
-                                    }
-                                }
-                                .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                                    Button(role: .destructive) {
-                                        templateStore.delete(ids: [template.id])
-                                    } label: {
-                                        Label("Delete", systemImage: "trash")
-                                    }
+                                    Label("Delete", systemImage: "trash")
                                 }
                             }
                         }
                     }
+                    .listStyle(.insetGrouped)
                 }
             }
             .navigationTitle("Templates")

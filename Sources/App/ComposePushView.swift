@@ -115,19 +115,17 @@ struct ComposePushView: View {
             }
         }
         .interactiveDismissDisabled(isDirty)
-        .confirmationDialog("Save this draft?", isPresented: $isPresentingDiscardConfirmation) {
+        .confirmationDialog("Save your changes?", isPresented: $isPresentingDiscardConfirmation) {
             Button("Save as template") {
                 isPresentingDiscardConfirmation = false
                 isPresentingSaveAsTemplate = true
-            }
-            Button("Save as Draft") {
             }
             Button("Discard", role: .destructive) {
                 dismiss()
             }
             Button("Keep Editing", role: .cancel) {}
         } message: {
-            Text("You can save it as a draft, save as a template, or discard it.")
+            Text("Save as a template or discard your changes?")
         }
         .alert("Template Name", isPresented: $isPresentingSaveAsTemplate) {
             TextField("Name", text: $newTemplateName)
