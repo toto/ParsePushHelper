@@ -156,15 +156,28 @@ struct ComposePushView: View {
         let trimmedTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
         let trimmedBody = bodyText.trimmingCharacters(in: .whitespacesAndNewlines)
         let trimmedURL = urlString.trimmingCharacters(in: .whitespacesAndNewlines)
-        return !trimmedTitle.isEmpty ||
-            !trimmedBody.isEmpty ||
-            target != .allDevices ||
-            isSoundEnabled != true ||
-            isBadgeEnabled ||
-            badgeCount != 1 ||
-            isTimeSensitive ||
-            language != .all ||
-            !trimmedURL.isEmpty
+
+        if let t = template {
+            return trimmedTitle != t.title ||
+                trimmedBody != t.bodyText ||
+                target != t.target ||
+                isSoundEnabled != t.isSoundEnabled ||
+                isBadgeEnabled != t.isBadgeEnabled ||
+                badgeCount != t.badgeCount ||
+                isTimeSensitive != t.isTimeSensitive ||
+                language != t.language ||
+                trimmedURL != t.urlString
+        } else {
+            return !trimmedTitle.isEmpty ||
+                !trimmedBody.isEmpty ||
+                target != .allDevices ||
+                isSoundEnabled != true ||
+                isBadgeEnabled ||
+                badgeCount != 1 ||
+                isTimeSensitive ||
+                language != .all ||
+                !trimmedURL.isEmpty
+        }
     }
 
     private func handleCancel() {
