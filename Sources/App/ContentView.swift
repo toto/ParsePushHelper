@@ -29,6 +29,11 @@ struct ContentView: View {
                 .tabItem {
                     Label("Servers", systemImage: "server.rack")
                 }
+
+            PushStatusView(store: store)
+                .tabItem {
+                    Label("Status", systemImage: "bell.badge")
+                }
         }
         .sheet(isPresented: $isPresentingInitialConfiguration) {
             ParseServerConfigurationFormView(
