@@ -8,17 +8,39 @@
 import Foundation
 
 public struct PushStatusEntry: Identifiable, Hashable {
+    public struct PayloadItem: Identifiable, Hashable {
+        public let id: String
+        public let value: String
+
+        public init(id: String, value: String) {
+            self.id = id
+            self.value = value
+        }
+    }
+
     public let id: String
     public let createdAt: String?
     public let updatedAt: String?
     public let status: String?
+    public let numSent: Int?
+    public let payloadItems: [PayloadItem]
     public let rawJSON: String
 
-    public init(id: String, createdAt: String?, updatedAt: String?, status: String?, rawJSON: String) {
+    public init(
+        id: String,
+        createdAt: String?,
+        updatedAt: String?,
+        status: String?,
+        numSent: Int?,
+        payloadItems: [PayloadItem],
+        rawJSON: String
+    ) {
         self.id = id
         self.createdAt = createdAt
         self.updatedAt = updatedAt
         self.status = status
+        self.numSent = numSent
+        self.payloadItems = payloadItems
         self.rawJSON = rawJSON
     }
 }
@@ -83,6 +105,8 @@ public struct PushStatusRepository {
             let createdAt = entry["createdAt"] as? String
             let updatedAt = entry["updatedAt"] as? String
             let status = (entry["status"] as? String) ?? (entry["pushStatus"] as? String)
+            let numSent = entry["numSent"] as? Int
+            let payloadItems = Self.payloadItems(from: entry["payload"])
             let rawJSON = Self.prettyPrintedJSON(from: entry)
 
             return PushStatusEntry(
@@ -90,9 +114,41 @@ public struct PushStatusRepository {
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 status: status,
+                numSent: numSent,
+                payloadItems: payloadItems,
                 rawJSON: rawJSON
             )
         }
+    }
+
+    private static func payloadItems(from payload: Any?) -> [PushStatusEntry.PayloadItem] {
+        guard let payload = payload as? String,
+              let data = payload.data(using: .utf8),
+              let result = try? JSONSerialization.jsonObject(with: data)
+         else {
+            return []
+        }
+        guard let payload = result as? [String: Any] else {
+            return []
+        }
+
+        return payload
+            .sorted { $0.key.localizedStandardCompare($1.key) == .orderedAscending }
+            .map { key, value in
+                PushStatusEntry.PayloadItem(id: key, value: valueDescription(value))
+            }
+    }
+
+    private static func valueDescription(_ value: Any) -> String {
+        if let string = value as? String {
+            return string
+        }
+        if JSONSerialization.isValidJSONObject(value),
+           let data = try? JSONSerialization.data(withJSONObject: value, options: [.sortedKeys]),
+           let json = String(data: data, encoding: .utf8) {
+            return json
+        }
+        return String(describing: value)
     }
 
     private static func prettyPrintedJSON(from object: [String: Any]) -> String {

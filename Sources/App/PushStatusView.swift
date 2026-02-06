@@ -63,15 +63,6 @@ struct PushStatusView: View {
                     )
                 } else {
                     List {
-                        Section("Server") {
-                            Picker("Server", selection: $selectedConfigurationID) {
-                                ForEach(store.configurations) { configuration in
-                                    Text(configuration.name)
-                                        .tag(Optional(configuration.id))
-                                }
-                            }
-                        }
-
                         if viewModel.isLoading {
                             Section {
                                 HStack {
@@ -114,6 +105,13 @@ struct PushStatusView: View {
             }
             .navigationTitle("Push Status")
             .toolbar {
+                ToolbarItem(placement: .principal) {
+                    TitlePickerView(
+                        configurations: store.configurations,
+                        selectedConfigurationID: $selectedConfigurationID
+                    )
+                }
+
                 if selectedConfiguration != nil {
                     ToolbarItem(placement: .primaryAction) {
                         Button("Refresh", systemImage: "arrow.clockwise") {
@@ -170,31 +168,146 @@ struct PushStatusView: View {
     }
 }
 
+private struct TitlePickerView: View {
+    let configurations: [ParseServerConfiguration]
+    @Binding var selectedConfigurationID: ParseServerConfiguration.ID?
+
+    var body: some View {
+        VStack(spacing: 2) {
+            if configurations.count > 1 {
+                Picker("Server", selection: $selectedConfigurationID) {
+                    ForEach(configurations) { configuration in
+                        Text(configuration.name)
+                            .tag(Optional(configuration.id))
+                    }
+                }
+                .labelsHidden()
+                .pickerStyle(.menu)
+            } else if let configuration = configurations.first {
+                Text(configuration.name)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+        }
+    }
+}
+
 private struct PushStatusRow: View {
     let entry: PushStatusEntry
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             HStack {
-                Text(entry.status ?? "Status")
-                    .font(.headline)
+                StatusLabel(status: entry.status)
                 Spacer()
                 Text(entry.id)
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
 
-            if let createdAt = entry.createdAt {
+            if let createdAt = formattedDate(entry.createdAt) {
                 Text("Created: \(createdAt)")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             }
 
-            if let updatedAt = entry.updatedAt {
+            if let updatedAt = formattedDate(entry.updatedAt) {
                 Text("Updated: \(updatedAt)")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             }
+
+            if let numSent = entry.numSent {
+                Text("Sent pushes: \(numSent)")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
+
+            if !entry.payloadItems.isEmpty {
+                VStack(alignment: .leading, spacing: 2) {
+                    ForEach(entry.payloadItems.prefix(3)) { item in
+                        Text("\(item.id): \(item.value)")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                            .truncationMode(.tail)
+                    }
+
+                    if entry.payloadItems.count > 3 {
+                        Text("+\(entry.payloadItems.count - 3) more")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            }
+        }
+    }
+
+    private func formattedDate(_ isoString: String?) -> String? {
+        guard let isoString else {
+            return nil
+        }
+        if let date = Self.isoFormatter.date(from: isoString) ?? Self.isoFallbackFormatter.date(from: isoString) {
+            return Self.displayFormatter.string(from: date)
+        }
+        return nil
+    }
+
+    private static let isoFormatter: ISO8601DateFormatter = {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return formatter
+    }()
+
+    private static let isoFallbackFormatter: ISO8601DateFormatter = {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime]
+        return formatter
+    }()
+
+    private static let displayFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.locale = .autoupdatingCurrent
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .short
+        return formatter
+    }()
+}
+
+private struct StatusLabel: View {
+    let status: String?
+
+    var body: some View {
+        let display = StatusDisplay(status: status)
+        Label(display.title, systemImage: display.systemImage)
+            .font(.headline)
+            .foregroundStyle(display.color)
+    }
+}
+
+private struct StatusDisplay {
+    let title: String
+    let systemImage: String
+    let color: Color
+
+    init(status: String?) {
+        switch status?.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() {
+        case "succeeded", "sent":
+            title = "Sent"
+            systemImage = "checkmark.circle.fill"
+            color = .green
+        case "sending":
+            title = "Sending"
+            systemImage = "paperplane.fill"
+            color = .green
+        case "failed", "error":
+            title = "Failed"
+            systemImage = "xmark.octagon.fill"
+            color = .red
+        default:
+            title = status?.isEmpty == false ? (status ?? "Status") : "Status"
+            systemImage = "bell"
+            color = .secondary
         }
     }
 }
@@ -204,10 +317,32 @@ private struct PushStatusDetailView: View {
 
     var body: some View {
         ScrollView {
-            Text(entry.rawJSON)
-                .font(.system(.body, design: .monospaced))
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding()
+            VStack(alignment: .leading, spacing: 16) {
+                if !entry.payloadItems.isEmpty {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Payload")
+                            .font(.headline)
+
+                        ForEach(entry.payloadItems) { item in
+                            HStack(alignment: .top, spacing: 8) {
+                                Text(item.id)
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
+                                    .frame(width: 120, alignment: .leading)
+
+                                Text(item.value)
+                                    .font(.subheadline)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                            }
+                        }
+                    }
+                }
+
+                Text(entry.rawJSON)
+                    .font(.system(.body, design: .monospaced))
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .padding()
         }
         .navigationTitle("Details")
         .navigationBarTitleDisplayMode(.inline)

@@ -8,8 +8,15 @@
 import SwiftUI
 
 struct ContentView: View {
+    private enum Tab: Int {
+        case status
+        case templates
+        case servers
+    }
+
     @State private var store: ParseServerStore
     let templateStore: PushTemplateStore
+    @AppStorage("selectedTab") private var selectedTab = Tab.status.rawValue
     @State private var isPresentingInitialConfiguration = false
     @State private var initialAPIKey = ""
 
@@ -19,21 +26,26 @@ struct ContentView: View {
     }
 
     var body: some View {
-        TabView {
-            PushView(templateStore: templateStore)
-                .tabItem {
-                    Label("Templates", systemImage: "doc.on.doc")
-                }
-
-            ConfigurationView(store: store)
-                .tabItem {
-                    Label("Servers", systemImage: "server.rack")
-                }
+        TabView(selection: $selectedTab) {
 
             PushStatusView(store: store)
                 .tabItem {
                     Label("Status", systemImage: "bell.badge")
                 }
+                .tag(Tab.status.rawValue)
+
+            PushView(templateStore: templateStore)
+                .tabItem {
+                    Label("Templates", systemImage: "doc.on.doc")
+                }
+                .tag(Tab.templates.rawValue)
+
+            ConfigurationView(store: store)
+                .tabItem {
+                    Label("Servers", systemImage: "server.rack")
+                }
+                .tag(Tab.servers.rawValue)
+
         }
         .sheet(isPresented: $isPresentingInitialConfiguration) {
             ParseServerConfigurationFormView(
