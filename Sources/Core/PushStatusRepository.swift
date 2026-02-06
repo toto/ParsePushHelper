@@ -55,7 +55,7 @@ public struct PushStatusRepository {
         request.httpMethod = "GET"
         request.setValue(configuration.appID, forHTTPHeaderField: "X-Parse-Application-Id")
         if let apiKey, !apiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            request.setValue(apiKey, forHTTPHeaderField: "X-Parse-REST-API-Key")
+            request.setValue(apiKey, forHTTPHeaderField: "X-Parse-Master-Key")
         }
         request.setValue("application/json", forHTTPHeaderField: "Accept")
 
